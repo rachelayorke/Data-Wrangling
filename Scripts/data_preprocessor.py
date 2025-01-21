@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score
 
 # 1. Impute Missing Values
-def impute_missing_values(data, strategy='mean'):
+def impute_missing_values(data, strategy):
     """
     Fill missing values in the dataset.
     :param data: pandas DataFrame
@@ -15,7 +15,19 @@ def impute_missing_values(data, strategy='mean'):
     :return: pandas DataFrame
     """
     # TODO: Fill missing values based on the specified strategy
-    pass
+    # Select numeric columns
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    
+    if strategy == 'mean':
+        # Replace missing values with the mean of each column
+        data[numeric_cols] = data[numeric_cols].fillna(data[numeric_cols].mean())
+    elif strategy == 'median':
+        # Replace missing values with the median of each column
+        data[numeric_cols] = data[numeric_cols].fillna(data[numeric_cols].median())
+    elif strategy == 'mode':
+        # Replace missing values with the mode of each column
+        data[numeric_cols] = data[numeric_cols].fillna(data[numeric_cols].mode().iloc[0])
+    return data
 
 # 2. Remove Duplicates
 def remove_duplicates(data):
@@ -25,7 +37,8 @@ def remove_duplicates(data):
     :return: pandas DataFrame
     """
     # TODO: Remove duplicate rows
-    pass
+    data = data.drop_duplicates()
+    return data
 
 # 3. Normalize Numerical Data
 def normalize_data(data,method='minmax'):
@@ -34,7 +47,19 @@ def normalize_data(data,method='minmax'):
     :param method: str, normalization method ('minmax' (default) or 'standard')
     """
     # TODO: Normalize numerical data using Min-Max or Standard scaling
-    pass
+    
+    # Select numeric columns
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    
+    if method == 'minmax':
+        # Apply minmax scaling
+        scaler = MinMaxScaler()
+        data[numeric_cols] = scaler.fit_transform(data[numeric_cols])
+    elif method == 'standard':
+        #Apply standard scaling
+        scaler = StandardScaler()
+        data[numeric_cols] = scaler.fit_transform(data[numeric_cols])
+    return data
 
 # 4. Remove Redundant Features   
 def remove_redundant_features(data, threshold=0.9):
@@ -44,7 +69,27 @@ def remove_redundant_features(data, threshold=0.9):
     :return: pandas DataFrame
     """
     # TODO: Remove redundant features based on the correlation threshold (HINT: you can use the corr() method)
-    pass
+    
+    # Select numeric columns
+    numeric_cols = data.select_dtypes(include=['number']).columns
+    
+    # Compute correlation matrix
+    corr_matrix = data[numeric_cols].corr().abs()
+    
+    # Reduce correlation matrix
+    red_corr_matrix = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    
+    # Select features to remove 
+    redundant_features = []
+    for column in red_corr_matrix.columns:
+        if any(red_corr_matrix[column] > threshold):
+            redundant_features.append(column)
+            
+    # Remove selected features
+    data = data.drop(columns=redundant_features)
+    
+    print("Removing redundant features: ", redundant_features)
+    return data
 
 # ---------------------------------------------------
 
