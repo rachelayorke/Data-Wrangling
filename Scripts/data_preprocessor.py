@@ -17,7 +17,7 @@ def impute_missing_values(data, strategy='mean'):
     
     # Drop rows with missing target values:
     data = data.dropna(subset=['target'])
-    
+   
     # Fill missing values based on the specified strategy
     # Select numeric columns
     numeric_cols = data.select_dtypes(include=['number']).columns
@@ -31,6 +31,9 @@ def impute_missing_values(data, strategy='mean'):
     elif strategy == 'mode':
         # Replace missing values with the mode of each column
         data = data.fillna(data.mode().iloc[0])
+    
+    categorical_cols = data.select_dtypes(include=['object']).columns
+    data[categorical_cols] = data[categorical_cols].fillna("Unknown")
 
     return data
 
@@ -68,7 +71,7 @@ def normalize_data(data,method='minmax'):
     return data
 
 # 4. Remove Redundant Features   
-def remove_redundant_features(data, threshold=0.9):
+def remove_redundant_features(data, threshold=0.9, print_features=True):
     """Remove redundant or duplicate columns.
     :param data: pandas DataFrame
     :param threshold: float, correlation threshold
@@ -94,7 +97,8 @@ def remove_redundant_features(data, threshold=0.9):
     # Remove selected features
     data = data.drop(columns=redundant_features)
     
-    print("Removing redundant features: ", redundant_features)
+    if print_features:
+        print("Redundant features removed: ", redundant_features)
     return data
 
 # ---------------------------------------------------
